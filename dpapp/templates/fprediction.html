@@ -1,0 +1,86 @@
+{% extends "parent.html" %}
+{% block body %}
+
+<div class="page-header">
+  <h1>📄 File Upload Prediction</h1>
+  <p>Upload a CSV file with symptom columns. The model will analyze the first row automatically.</p>
+</div>
+
+{% if res %}
+<div class="result-banner">
+  <div class="result-icon">🏥</div>
+  <div>
+    <div class="result-label">Predicted Condition</div>
+    <div class="result-disease">{{ res }}</div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <form method="post" enctype="multipart/form-data" id="fileForm">
+    {% csrf_token %}
+    <label class="file-drop" id="dropZone" for="csvInput">
+      <div class="file-icon">📂</div>
+      <h3 id="dropTitle">Drop your CSV file here</h3>
+      <p id="dropSub">or click to browse &mdash; accepts .csv files only</p>
+      <input type="file" name="csv_file" id="csvInput" accept=".csv" required
+             onchange="fileSelected(this)" />
+    </label>
+
+    <div style="margin-top: 1rem; padding: 1rem; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border);">
+      <div style="font-size: 0.78rem; color: var(--muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.06em;">Expected CSV columns</div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--accent2);">
+        fever, headache, nausea, vomiting, fatigue, joint_pain, skin_rash, cough, weight_loss, yellow_eyes, disease
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button type="submit" class="btn btn-primary">🔬 Analyze File</button>
+    </div>
+  </form>
+</div>
+
+<script>
+function fileSelected(input) {
+  if (input.files && input.files[0]) {
+    document.getElementById('dropTitle').textContent = input.files[0].name;
+    document.getElementById('dropSub').textContent = (input.files[0].size / 1024).toFixed(1) + ' KB · Ready to analyze';
+    document.getElementById('dropZone').style.borderColor = 'var(--accent)';
+  }
+}
+
+const zone = document.getElementById('dropZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) { document.getElementById('csvInput').files = e.dataTransfer.files; fileSelected(document.getElementById('csvInput')); }
+});
+</script>
+{% endblock body %}
+
+{% if res and doctors %}
+<div style="margin-top:1.5rem">
+  <div style="font-size:0.72rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem">
+    👨‍⚕️ Recommended Doctors
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:0.75rem;margin-bottom:1.25rem">
+    {% for doc in doctors %}
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.6rem">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(56,139,253,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.72rem;color:var(--accent2);flex-shrink:0">{{doc.avatar_initials}}</div>
+        <div>
+          <div style="font-size:0.82rem;font-weight:600">Dr. {{doc.name}}</div>
+          <div style="font-size:0.7rem;color:var(--muted)">{{doc.specialty}}</div>
+        </div>
+      </div>
+      <a href="{% url 'doctors' %}?disease={{ res }}" style="display:block;width:100%;padding:6px;border-radius:6px;background:rgba(56,139,253,0.1);border:1px solid rgba(56,139,253,0.25);color:var(--accent2);font-size:0.75rem;font-weight:500;text-align:center;text-decoration:none">Book Appointment →</a>
+    </div>
+    {% endfor %}
+  </div>
+  <div style="text-align:center">
+    <a href="{% url 'doctors' %}?disease={{ res }}" class="btn btn-primary">View All Recommended Doctors</a>
+  </div>
+</div>
+{% endif %}

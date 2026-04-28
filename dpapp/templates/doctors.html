@@ -1,0 +1,237 @@
+{% extends "parent.html" %}
+{% block body %}
+
+<style>
+  .doc-card { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:1.25rem; transition:border-color 0.2s, transform 0.2s; }
+  .doc-card:hover { border-color:rgba(56,139,253,0.4); transform:translateY(-2px); }
+  .avatar { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0; }
+  .av-blue  { background:rgba(56,139,253,0.15); color:var(--accent2); }
+  .av-green { background:rgba(57,211,83,0.15);  color:#39d353; }
+  .av-amber { background:rgba(227,179,65,0.15); color:var(--gold); }
+  .av-teal  { background:rgba(0,210,200,0.15);  color:#00d2c8; }
+  .av-purple{ background:rgba(160,90,255,0.15); color:#a05aff; }
+  .av-coral { background:rgba(255,100,80,0.15); color:#ff6450; }
+  .stars { color:var(--gold); font-size:0.72rem; letter-spacing:1px; }
+  .pill-sm { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:0.7rem; font-weight:500; }
+  .pill-avail { background:rgba(57,211,83,0.12); color:#39d353; }
+  .pill-tmrw  { background:rgba(248,81,73,0.10); color:var(--red); }
+  .pill-exp   { background:rgba(56,139,253,0.12); color:var(--accent2); }
+  .pill-fee   { background:rgba(227,179,65,0.12); color:var(--gold); }
+  .book-btn { width:100%; padding:7px; border-radius:7px; background:rgba(56,139,253,0.1); border:1px solid rgba(56,139,253,0.25); color:var(--accent2); font-size:0.78rem; font-weight:600; cursor:pointer; font-family:'Sora',sans-serif; transition:all 0.2s; margin-top:0.6rem; }
+  .book-btn:hover { background:rgba(56,139,253,0.2); border-color:var(--accent); }
+
+  /* Modal */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal-box { background:#0d1829; border:1px solid rgba(56,139,253,0.3); border-radius:14px; padding:1.75rem; width:100%; max-width:440px; margin:1rem; animation:popIn 0.25s ease; }
+  @keyframes popIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+  .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; }
+  .modal-title { font-size:1rem; font-weight:700; }
+  .close-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.2rem; line-height:1; padding:0; }
+  .close-btn:hover { color:var(--text); }
+  .slots-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:1rem; }
+  .slot { padding:7px 4px; text-align:center; border:1px solid var(--border); border-radius:7px; font-size:0.75rem; cursor:pointer; color:var(--muted); transition:all 0.15s; background:var(--surface2); }
+  .slot:hover,.slot.picked { background:rgba(56,139,253,0.15); border-color:var(--accent); color:var(--accent2); }
+  .name-input { width:100%; padding:8px 12px; border-radius:7px; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:'Sora',sans-serif; font-size:0.85rem; margin-bottom:0.75rem; }
+  .name-input:focus { outline:none; border-color:var(--accent); }
+  .confirm-btn { width:100%; padding:10px; border-radius:8px; background:var(--accent); border:none; color:white; font-size:0.9rem; font-weight:700; cursor:pointer; font-family:'Sora',sans-serif; transition:background 0.2s; }
+  .confirm-btn:hover { background:var(--accent2); }
+  .confirm-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .success-box { text-align:center; padding:1.5rem; display:none; }
+  .success-box .s-icon { font-size:2.5rem; margin-bottom:0.75rem; }
+  .success-box h3 { color:#39d353; font-size:1rem; margin-bottom:0.4rem; }
+  .success-box p { color:var(--muted); font-size:0.83rem; }
+
+  .tip-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0; margin-top:5px; }
+  .section-lbl { font-size:0.72rem; font-weight:500; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.75rem; }
+  .appt-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(56,139,253,0.06); font-size:0.82rem; }
+  .appt-row:last-child { border-bottom:none; }
+</style>
+
+<div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+  <div>
+    <h1>👨‍⚕️ Doctor Recommendation</h1>
+    <p>
+      {% if disease %}AI-matched specialists for <strong style="color:var(--accent2)">{{ disease }}</strong>{% else %}All available doctors{% endif %}
+    </p>
+  </div>
+  {% if disease %}
+  <a href="{% url 'doctors' %}" class="btn btn-outline">View All Doctors</a>
+  {% endif %}
+</div>
+
+{% if disease %}
+<div class="result-banner" style="margin-bottom:1.5rem">
+  <div class="result-icon">🏥</div>
+  <div>
+    <div class="result-label">Predicted Condition</div>
+    <div class="result-disease">{{ disease }}</div>
+  </div>
+  <div style="margin-left:auto;text-align:right">
+    <div class="result-label">Matched Doctors</div>
+    <div style="font-size:1rem;font-weight:700;color:var(--accent2)">{{ doctors|length }}</div>
+  </div>
+</div>
+{% endif %}
+
+<!-- DOCTORS GRID -->
+<div class="section-lbl">Recommended Specialists</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.9rem;margin-bottom:2rem">
+  {% for doc in doctors %}
+  <div class="doc-card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:0.75rem">
+      <div class="avatar av-{{ doc.avatar_color }}">{{ doc.avatar_initials }}</div>
+      <div>
+        <div style="font-size:0.9rem;font-weight:700">Dr. {{ doc.name }}</div>
+        <div style="font-size:0.72rem;color:var(--muted)">{{ doc.specialty }}</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:0.6rem">
+      {% if doc.available_today %}
+      <span class="pill-sm pill-avail">✓ Available Today</span>
+      {% else %}
+      <span class="pill-sm pill-tmrw">Tomorrow</span>
+      {% endif %}
+      <span class="pill-sm pill-exp">{{ doc.experience }} yrs exp</span>
+      <span class="pill-sm pill-fee">₹{{ doc.fee }}</span>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem">
+      <span><span class="stars">★★★★★</span> {{ doc.rating }}</span>
+      <span>📍 {{ doc.location }}</span>
+    </div>
+
+    <button class="book-btn"
+      onclick="openModal({{ doc.id }}, 'Dr. {{ doc.name }}', {{ doc.fee }}, '{{ disease }}')">
+      Book Appointment →
+    </button>
+  </div>
+  {% empty %}
+  <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted)">
+    <div style="font-size:2rem;margin-bottom:0.75rem">👨‍⚕️</div>
+    <p>No doctors found. <a href="{% url 'doctors' %}" style="color:var(--accent2)">View all doctors</a></p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- CARE TIPS -->
+{% if tips %}
+<div class="section-lbl">💊 Care Tips for {{ disease }}</div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:2rem">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem">
+    {% for tip in tips %}
+    <div style="display:flex;align-items:flex-start;gap:8px;font-size:0.8rem;color:var(--muted);line-height:1.6">
+      <div class="tip-dot"></div>{{ tip }}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- RECENT APPOINTMENTS -->
+{% if appointments %}
+<div class="section-lbl">📅 Recent Appointments</div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:2rem">
+  {% for a in appointments %}
+  <div class="appt-row">
+    <div>
+      <div style="font-weight:600;font-size:0.85rem">Dr. {{ a.doctor.name }}</div>
+      <div style="color:var(--muted);font-size:0.75rem">{{ a.disease }} · {{ a.date }}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:0.82rem;color:var(--accent2)">{{ a.slot }}</div>
+      <div style="font-size:0.7rem;color:#39d353">{{ a.status|capfirst }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeIfOutside(event)">
+  <div class="modal-box" id="modalBox">
+    <div id="modalForm">
+      <div class="modal-header">
+        <div class="modal-title" id="modalDocName">Book Appointment</div>
+        <button class="close-btn" onclick="closeModal()">✕</button>
+      </div>
+
+      <input type="text" class="name-input" id="patientName" placeholder="Your name" />
+
+      <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.5rem">Choose a time slot</div>
+      <div class="slots-grid">
+        {% for slot in slots %}
+        <div class="slot" onclick="pickSlot(this,'{{ slot }}')">{{ slot }}</div>
+        {% endfor %}
+      </div>
+
+      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.75rem" id="feeLabel"></div>
+      <button class="confirm-btn" id="confirmBtn" onclick="confirmBooking()" disabled>Select a slot to confirm</button>
+    </div>
+
+    <div class="success-box" id="successBox">
+      <div class="s-icon">✅</div>
+      <h3>Appointment Confirmed!</h3>
+      <p id="successMsg"></p>
+      <button class="btn btn-outline" style="margin-top:1rem;width:100%;padding:8px" onclick="closeModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentDocId = null, currentFee = 0, currentDisease = '', pickedSlot = null;
+
+  function openModal(docId, docName, fee, disease) {
+    currentDocId = docId; currentFee = fee; currentDisease = disease; pickedSlot = null;
+    document.getElementById('modalDocName').textContent = 'Book with ' + docName;
+    document.getElementById('feeLabel').textContent = 'Consultation fee: ₹' + fee;
+    document.getElementById('confirmBtn').textContent = 'Select a slot to confirm';
+    document.getElementById('confirmBtn').disabled = true;
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('picked'));
+    document.getElementById('modalForm').style.display = '';
+    document.getElementById('successBox').style.display = 'none';
+    document.getElementById('patientName').value = '';
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+  function closeIfOutside(e) { if (e.target.id === 'modalOverlay') closeModal(); }
+
+  function pickSlot(el, slot) {
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('picked'));
+    el.classList.add('picked'); pickedSlot = slot;
+    document.getElementById('confirmBtn').textContent = 'Confirm — ₹' + currentFee;
+    document.getElementById('confirmBtn').disabled = false;
+  }
+
+  function getCookie(name) {
+    let v = null;
+    document.cookie.split(';').forEach(c => {
+      c = c.trim();
+      if (c.startsWith(name + '=')) v = decodeURIComponent(c.slice(name.length + 1));
+    });
+    return v;
+  }
+
+  async function confirmBooking() {
+    const btn = document.getElementById('confirmBtn');
+    const name = document.getElementById('patientName').value.trim() || 'Patient';
+    btn.disabled = true; btn.textContent = 'Booking...';
+
+    const resp = await fetch('{% url "book_appointment" %}', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': getCookie('csrftoken')},
+      body: new URLSearchParams({ doctor_id: currentDocId, slot: pickedSlot, disease: currentDisease, patient_name: name })
+    });
+
+    const data = await resp.json();
+    if (data.success) {
+      document.getElementById('modalForm').style.display = 'none';
+      document.getElementById('successBox').style.display = 'block';
+      document.getElementById('successMsg').textContent = data.message;
+    }
+  }
+</script>
+
+{% endblock body %}

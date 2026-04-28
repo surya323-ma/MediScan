@@ -1,0 +1,54 @@
+{% extends "parent.html" %}
+{% block body %}
+
+<div class="hero">
+  <div class="hero-badge">
+    <span>🟢</span> AI-Powered Medical Analysis
+  </div>
+  <h1>Predict Diseases<br/>from Your Symptoms</h1>
+  <p>Enter your symptoms manually or upload a CSV report. Our machine learning model identifies possible conditions instantly.</p>
+  <div class="hero-actions">
+    <a href="{% url 'prediction' %}" class="btn btn-primary">🧬 Start Prediction</a>
+    <a href="{% url 'fprediction' %}" class="btn btn-outline">📄 Upload Report</a>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-value" style="color: var(--accent2);">{{ total }}</div>
+    <div class="stat-label">Total Predictions</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" style="color: var(--teal);">10</div>
+    <div class="stat-label">Symptoms Analyzed</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" style="color: var(--gold);">{{ appt_count }}</div>
+    <div class="stat-label">Appointments Booked</div>
+  </div>
+</div>
+
+<div class="feature-grid">
+  <div class="feature-card">
+    <div class="feature-icon" style="background: rgba(56,139,253,0.1);">🧬</div>
+    <h3>Symptom-Based Prediction</h3>
+    <p>Select from 10 common symptoms and get an immediate AI-powered disease prediction.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon" style="background: rgba(57,211,83,0.1);">👨‍⚕️</div>
+    <h3>Doctor Recommendation</h3>
+    <p>Get matched with the right specialist based on your predicted condition. Book appointments instantly.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon" style="background: rgba(56,139,253,0.1);">📄</div>
+    <h3>CSV File Upload</h3>
+    <p>Upload a medical report in CSV format for batch analysis and instant results.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon" style="background: rgba(227,179,65,0.1);">📊</div>
+    <h3>Prediction History</h3>
+    <p>Browse all past predictions with full symptom details in a searchable table.</p>
+  </div>
+</div>
+
+{% endblock body %}
