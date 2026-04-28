@@ -1,0 +1,192 @@
+{% extends "parent.html" %}
+{% block body %}
+
+<div class="page-header">
+  <h1>🧬 Disease Prediction</h1>
+  <p>Select your symptoms below. Toggle each symptom on or off.</p>
+</div>
+
+{% if res %}
+<div class="result-banner">
+  <div class="result-icon">🏥</div>
+  <div>
+    <div class="result-label">Predicted Condition</div>
+    <div class="result-disease">{{ res }}</div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <form method="post" id="symptomForm">
+    {% csrf_token %}
+    <div class="form-grid">
+
+      {% with symptoms="fever,headache,nausea,vomiting,fatigue,joint_pain,skin_rash,cough,weight_loss,yellow_eyes" %}
+      {% with labels="Fever,Headache,Nausea,Vomiting,Fatigue,Joint Pain,Skin Rash,Cough,Weight Loss,Yellow Eyes" %}
+      {% with icons="🌡️,🤕,🤢,🤮,😴,🦴,💢,😷,⚖️,👁️" %}
+
+      <div class="symptom-field">
+        <div class="symptom-label"><span class="dot" id="dot_fever"></span> 🌡️ Fever</div>
+        <div class="toggle-wrap">
+          <select name="fever" onchange="updateDot(this,'dot_fever')">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="symptom-field">
+        <div class="symptom-label"><span class="dot" id="dot_headache"></span> 🤕 Headache</div>
+        <div class="toggle-wrap">
+          <select name="headache" onchange="updateDot(this,'dot_headache')">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="symptom-field">
+        <div class="symptom-label"><span class="dot" id="dot_nausea"></span> 🤢 Nausea</div>
+        <div class="toggle-wrap">
+          <select name="nausea" onchange="updateDot(this,'dot_nausea')">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="symptom-field">
+        <div class="symptom-label"><span class="dot" id="dot_vomiting"></span> 🤮 Vomiting</div>
+        <div class="toggle-wrap">
+          <select name="vomiting" onchange="updateDot(this,'dot_vomiting')">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="symptom-field">
+        <div class="symptom-label"><span class="dot" id="dot_fatigue"></span> 😴 Fatigue</div>
+        <div class="toggle-wrap">
+          <select name="fatigue" onchange="updateDot(this,'dot_fatigue')">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="symptom-field">
+        <div class="symptom-label"><span class="dot" id="dot_joint_pain"></span> 🦴 Joint Pain</div>
+        <div class="toggle-wrap">
+          <select name="joint_pain" onchange="updateDot(this,'dot_joint_pain')">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="symptom-field">
+        <div class="symptom-label"><span class="dot" id="dot_skin_rash"></span> 💢 Skin Rash</div>
+        <div class="toggle-wrap">
+          <select name="skin_rash" onchange="updateDot(this,'dot_skin_rash')">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="symptom-field">
+        <div class="symptom-label"><span class="dot" id="dot_cough"></span> 😷 Cough</div>
+        <div class="toggle-wrap">
+          <select name="cough" onchange="updateDot(this,'dot_cough')">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="symptom-field">
+        <div class="symptom-label"><span class="dot" id="dot_weight_loss"></span> ⚖️ Weight Loss</div>
+        <div class="toggle-wrap">
+          <select name="weight_loss" onchange="updateDot(this,'dot_weight_loss')">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="symptom-field">
+        <div class="symptom-label"><span class="dot" id="dot_yellow_eyes"></span> 👁️ Yellow Eyes</div>
+        <div class="toggle-wrap">
+          <select name="yellow_eyes" onchange="updateDot(this,'dot_yellow_eyes')">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      {% endwith %}{% endwith %}{% endwith %}
+    </div>
+
+    <div class="submit-row">
+      <span style="color: var(--muted); font-size: 0.82rem;">Fill in your symptoms above</span>
+      <button type="submit" class="btn btn-primary">🔍 Run Prediction</button>
+    </div>
+  </form>
+</div>
+
+<script>
+function updateDot(sel, dotId) {
+  const dot = document.getElementById(dotId);
+  if (sel.value === "1") {
+    dot.classList.add("active");
+  } else {
+    dot.classList.remove("active");
+  }
+}
+</script>
+{% endblock body %}
+
+{% if res and doctors %}
+<div style="margin-top:2rem">
+  <div style="font-size:0.72rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem">
+    👨‍⚕️ Recommended Doctors for {{ res }}
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem;margin-bottom:1.5rem">
+    {% for doc in doctors %}
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.6rem">
+        <div style="width:40px;height:40px;border-radius:50%;background:rgba(56,139,253,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;color:var(--accent2);flex-shrink:0">{{doc.avatar_initials}}</div>
+        <div>
+          <div style="font-size:0.85rem;font-weight:600">Dr. {{doc.name}}</div>
+          <div style="font-size:0.72rem;color:var(--muted)">{{doc.specialty}}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.6rem">
+        {% if doc.available_today %}
+        <span style="background:rgba(57,211,83,0.12);color:#39d353;font-size:0.68rem;padding:2px 7px;border-radius:20px;font-weight:500">✓ Today</span>
+        {% else %}
+        <span style="background:rgba(248,81,73,0.1);color:var(--red);font-size:0.68rem;padding:2px 7px;border-radius:20px;font-weight:500">Tmrw</span>
+        {% endif %}
+        <span style="background:rgba(56,139,253,0.12);color:var(--accent2);font-size:0.68rem;padding:2px 7px;border-radius:20px;font-weight:500">{{doc.experience}} yrs</span>
+        <span style="background:rgba(227,179,65,0.12);color:var(--gold);font-size:0.68rem;padding:2px 7px;border-radius:20px;font-weight:500">₹{{doc.fee}}</span>
+      </div>
+      <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem">⭐ {{doc.rating}} · {{doc.location}}</div>
+      <a href="{% url 'doctors' %}?disease={{ res }}" style="display:block;width:100%;padding:6px;border-radius:6px;background:rgba(56,139,253,0.1);border:1px solid rgba(56,139,253,0.25);color:var(--accent2);font-size:0.75rem;font-weight:500;text-align:center;text-decoration:none">Book Appointment →</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem">
+    <div style="font-size:0.72rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.6rem">💊 Care Tips for {{ res }}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+      {% for tip in tips %}
+      <div style="display:flex;align-items:flex-start;gap:8px;font-size:0.78rem;color:var(--muted);line-height:1.5">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px"></div>
+        {{tip}}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}

@@ -1,0 +1,61 @@
+{% extends "parent.html" %}
+{% block body %}
+
+<div class="page-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+  <div>
+    <h1>📊 Prediction History</h1>
+    <p>All past disease predictions stored in the database.</p>
+  </div>
+  <a href="{% url 'prediction' %}" class="btn btn-primary">+ New Prediction</a>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+  {% if his %}
+  <div style="overflow-x: auto;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#ID</th>
+          <th>Fever</th>
+          <th>Headache</th>
+          <th>Nausea</th>
+          <th>Vomiting</th>
+          <th>Fatigue</th>
+          <th>Joint Pain</th>
+          <th>Skin Rash</th>
+          <th>Cough</th>
+          <th>Weight Loss</th>
+          <th>Yellow Eyes</th>
+          <th>Disease</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in his %}
+        <tr>
+          <td>#{{ h.id }}</td>
+          <td><span class="pill {% if h.fever == '1' %}pill-yes{% else %}pill-no{% endif %}">{% if h.fever == '1' %}Yes{% else %}No{% endif %}</span></td>
+          <td><span class="pill {% if h.headache == '1' %}pill-yes{% else %}pill-no{% endif %}">{% if h.headache == '1' %}Yes{% else %}No{% endif %}</span></td>
+          <td><span class="pill {% if h.nausea == '1' %}pill-yes{% else %}pill-no{% endif %}">{% if h.nausea == '1' %}Yes{% else %}No{% endif %}</span></td>
+          <td><span class="pill {% if h.vomiting == '1' %}pill-yes{% else %}pill-no{% endif %}">{% if h.vomiting == '1' %}Yes{% else %}No{% endif %}</span></td>
+          <td><span class="pill {% if h.fatigue == '1' %}pill-yes{% else %}pill-no{% endif %}">{% if h.fatigue == '1' %}Yes{% else %}No{% endif %}</span></td>
+          <td><span class="pill {% if h.joint_pain == '1' %}pill-yes{% else %}pill-no{% endif %}">{% if h.joint_pain == '1' %}Yes{% else %}No{% endif %}</span></td>
+          <td><span class="pill {% if h.skin_rash == '1' %}pill-yes{% else %}pill-no{% endif %}">{% if h.skin_rash == '1' %}Yes{% else %}No{% endif %}</span></td>
+          <td><span class="pill {% if h.cough == '1' %}pill-yes{% else %}pill-no{% endif %}">{% if h.cough == '1' %}Yes{% else %}No{% endif %}</span></td>
+          <td><span class="pill {% if h.weight_loss == '1' %}pill-yes{% else %}pill-no{% endif %}">{% if h.weight_loss == '1' %}Yes{% else %}No{% endif %}</span></td>
+          <td><span class="pill {% if h.yellow_eyes == '1' %}pill-yes{% else %}pill-no{% endif %}">{% if h.yellow_eyes == '1' %}Yes{% else %}No{% endif %}</span></td>
+          <td><span class="pill pill-disease">{{ h.res }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center; padding: 4rem 2rem; color: var(--muted);">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+    <h3 style="color: var(--text); margin-bottom: 0.5rem;">No predictions yet</h3>
+    <p>Start by making your first disease prediction.</p>
+    <a href="{% url 'prediction' %}" class="btn btn-primary" style="margin-top: 1.5rem;">Start Predicting</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock body %}
